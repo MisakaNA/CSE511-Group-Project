@@ -88,12 +88,32 @@ object SparkSQLExample {
   }
 
   def ST_Contains(pointString:String, queryRectangle:String): Boolean= {
+    var valueArray = pointString.split(',')
+    val pointX = valueArray(0).asInstanceOf[Double]
+    val pointY = valueArray(1).asInstanceOf[Double]
 
-    true
+    valueArray = queryRectangle.split(',')
+    val rectX1 = valueArray(0).asInstanceOf[Double]
+    val rectY1 = valueArray(1).asInstanceOf[Double]
+    val rectX2 = valueArray(2).asInstanceOf[Double]
+    val rectY2 = valueArray(3).asInstanceOf[Double]
+
+    pointX >= rectX1 && pointX <= rectX2 && pointY >= rectY1 && pointY <= rectY2
   }
 
   def ST_Within(pointString1:String, pointString2:String, distance:Double): Boolean= {
-    true
+    var valueArray = pointString1.split(',')
+    val point1X = valueArray(0).asInstanceOf[Double]
+    val point1Y = valueArray(1).asInstanceOf[Double]
+
+    valueArray = pointString2.split(',')
+    val point2X = valueArray(0).asInstanceOf[Double]
+    val point2Y = valueArray(1).asInstanceOf[Double]
+
+    val calculatedDistance = math.sqrt((point1X - point2X).abs * (point1X - point2X).abs
+      + (point1Y - point2Y).abs * (point1Y - point2Y).abs)
+
+    calculatedDistance == distance
   }
   }
 }
