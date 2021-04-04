@@ -14,7 +14,7 @@ object SparkSQLExample {
     val spark = SparkSession
       .builder()
       .appName("CSE512-Phase2")
-      .config("spark.some.config.option", "some-value").master("local[*]")
+      .config("spark.some.config.option", "some-value")//.master("local[*]")
       .getOrCreate()
 
     paramsParser(spark, args)
@@ -22,64 +22,54 @@ object SparkSQLExample {
     spark.stop()
   }
 
-  private def paramsParser(spark: SparkSession, args: Array[String]): Unit =
-  {
+  private def paramsParser(spark: SparkSession, args: Array[String]): Unit = {
     var paramOffset = 1
     var currentQueryParams = ""
     var currentQueryName = ""
     var currentQueryIdx = -1
 
-    while (paramOffset <= args.length)
-    {
-        if (paramOffset == args.length || args(paramOffset).toLowerCase.contains("query"))
-        {
-          // Turn in the previous query
-          if (currentQueryIdx!= -1) queryLoader(spark, currentQueryName, currentQueryParams, args(0)+currentQueryIdx)
+    while (paramOffset <= args.length) {
+      if (paramOffset == args.length || args(paramOffset).toLowerCase.contains("query")) {
+        // Turn in the previous query
+        if (currentQueryIdx != -1) queryLoader(spark, currentQueryName, currentQueryParams, args(0) + currentQueryIdx)
 
-          // Start a new query call
-          if (paramOffset == args.length) return
+        // Start a new query call
+        if (paramOffset == args.length) return
 
-          currentQueryName = args(paramOffset)
-          currentQueryParams = ""
-          currentQueryIdx = currentQueryIdx+1
-        }
-        else
-        {
-          // Keep appending query parameters
-          currentQueryParams = currentQueryParams + args(paramOffset) +" "
-        }
+        currentQueryName = args(paramOffset)
+        currentQueryParams = ""
+        currentQueryIdx = currentQueryIdx + 1
+      }
+      else {
+        // Keep appending query parameters
+        currentQueryParams = currentQueryParams + args(paramOffset) + " "
+      }
 
-      paramOffset = paramOffset+1
+      paramOffset = paramOffset + 1
     }
   }
 
-  private def queryLoader(spark: SparkSession, queryName:String, queryParams:String, outputPath: String): Unit = {
-  {
-    var queryResult:Long = -1
+  private def queryLoader(spark: SparkSession, queryName: String, queryParams: String, outputPath: String): Unit = {
+    var queryResult: Long = -1
     val queryParam = queryParams.split(" ")
-    if (queryName.equalsIgnoreCase("RangeQuery"))
-    {
-      if(queryParam.length!=2) throw new ArrayIndexOutOfBoundsException("[CSE512] Query "+queryName+" needs 2 parameters but you entered "+queryParam.length)
+    if (queryName.equalsIgnoreCase("RangeQuery")) {
+      if (queryParam.length != 2) throw new ArrayIndexOutOfBoundsException("[CSE512] Query " + queryName + " needs 2 parameters but you entered " + queryParam.length)
       queryResult = SpatialQuery.runRangeQuery(spark, queryParam(0), queryParam(1))
     }
-    else if (queryName.equalsIgnoreCase("RangeJoinQuery"))
-    {
-      if(queryParam.length!=2) throw new ArrayIndexOutOfBoundsException("[CSE512] Query "+queryName+" needs 2 parameters but you entered "+queryParam.length)
+    else if (queryName.equalsIgnoreCase("RangeJoinQuery")) {
+      if (queryParam.length != 2) throw new ArrayIndexOutOfBoundsException("[CSE512] Query " + queryName + " needs 2 parameters but you entered " + queryParam.length)
       queryResult = SpatialQuery.runRangeJoinQuery(spark, queryParam(0), queryParam(1))
     }
-    else if (queryName.equalsIgnoreCase("DistanceQuery"))
-    {
-      if(queryParam.length!=3) throw new ArrayIndexOutOfBoundsException("[CSE512] Query "+queryName+" needs 3 parameters but you entered "+queryParam.length)
+    else if (queryName.equalsIgnoreCase("DistanceQuery")) {
+      if (queryParam.length != 3) throw new ArrayIndexOutOfBoundsException("[CSE512] Query " + queryName + " needs 3 parameters but you entered " + queryParam.length)
       queryResult = SpatialQuery.runDistanceQuery(spark, queryParam(0), queryParam(1), queryParam(2))
     }
-    else if (queryName.equalsIgnoreCase("DistanceJoinQuery"))
-    {
-      if(queryParam.length!=3) throw new ArrayIndexOutOfBoundsException("[CSE512] Query "+queryName+" needs 3 parameters but you entered "+queryParam.length)
+    else if (queryName.equalsIgnoreCase("DistanceJoinQuery")) {
+      if (queryParam.length != 3) throw new ArrayIndexOutOfBoundsException("[CSE512] Query " + queryName + " needs 3 parameters but you entered " + queryParam.length)
       queryResult = SpatialQuery.runDistanceJoinQuery(spark, queryParam(0), queryParam(1), queryParam(2))
     }
-    else
-    {
-        throw new NoSuchElementException("[CSE512] The given query name "+queryName+" is wrong. Please check your input.")
+    else {
+      throw new NoSuchElementException("[CSE512] The given query name " + queryName + " is wrong. Please check your input.")
     }
 
     import spark.implicits._
@@ -87,7 +77,8 @@ object SparkSQLExample {
     resultDf.write.mode(SaveMode.Overwrite).csv(outputPath)
   }
 
-  def ST_Contains(pointString:String, queryRectangle:String): Boolean= {
+
+  def ST_Contains(pointString: String, queryRectangle: String): Boolean = {
     var valueArray = pointString.split(',')
     val pointX = valueArray(0).asInstanceOf[Double]
     val pointY = valueArray(1).asInstanceOf[Double]
@@ -101,7 +92,7 @@ object SparkSQLExample {
     pointX >= rectX1 && pointX <= rectX2 && pointY >= rectY1 && pointY <= rectY2
   }
 
-  def ST_Within(pointString1:String, pointString2:String, distance:Double): Boolean= {
+  def ST_Within(pointString1: String, pointString2: String, distance: Double): Boolean = {
     var valueArray = pointString1.split(',')
     val point1X = valueArray(0).asInstanceOf[Double]
     val point1Y = valueArray(1).asInstanceOf[Double]
@@ -114,6 +105,5 @@ object SparkSQLExample {
       + (point1Y - point2Y).abs * (point1Y - point2Y).abs)
 
     calculatedDistance == distance
-  }
   }
 }
